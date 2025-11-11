@@ -1,0 +1,54 @@
+name: Setup Python Environment
+description: Checkout the code and setup the Python test environment
+inputs:
+  install_dependencies:
+    default: true
+  install_test_dependencies:
+    default: true
+  install_project:
+    default: true
+runs:
+  using: composite
+  steps:
+    - name: Install Poetry
+      shell: bash
+      run: pipx install Poetry
+      if: ${{ inputs.poetry_project == 'true' }}
+
+    - name: Setup Python version
+      shell: bash
+      id: setup
+      run: |
+        if [ -f ".python-version" ];
+        then
+          echo "python_version=$(cat .python-version)" >> $GITHUB_OUTPUT
+        else
+          echo "python_version=3.13"
+        fi
+
+    - name: Install Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: ${{ steps.setup.outputs.python_version }}
+        cache: poetry
+
+    - name: Install tox
+      shell: bash
+      run: pipx install tox
+
+    - name: Install python dependencies
+      shell: bash
+      run: |
+        install_args=()
+        if [ "${{ inputs.install_test_dependencies }}" == "true" ];
+        then
+          install_args+=("--with" "test")
+        fi
+        
+        if [ "${{ inputs.install_project }}" != "true" ];
+        then
+          install_args+=("--no-root")
+        fi
+        
+        poetry install ${install_args[@]}
+      if: ${{ inputs.install_dependencies == 'true' }}
