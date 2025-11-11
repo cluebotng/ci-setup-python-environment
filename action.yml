@@ -13,7 +13,6 @@ runs:
     - name: Install Poetry
       shell: bash
       run: pipx install Poetry
-      if: ${{ inputs.poetry_project == 'true' }}
 
     - name: Setup Python version
       shell: bash
@@ -23,7 +22,7 @@ runs:
         then
           echo "python_version=$(cat .python-version)" >> $GITHUB_OUTPUT
         else
-          echo "python_version=3.13"
+          echo "python_version=3.14.0"
         fi
 
     - name: Install Python
